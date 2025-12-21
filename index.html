@@ -5,7 +5,6 @@
     <title>Money Ware | Digital Precision</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
     <style>
         :root {
             --bg-window: #080808;
@@ -20,18 +19,16 @@
 
         * { box-sizing: border-box; user-select: none; outline: none; }
         
-        /* FIX: Transparenter Body verhindert schwarze/weiße Flächen im Spiel */
         body { 
-            margin: 0; 
-            padding: 0; 
-            background-color: rgba(0, 0, 0, 0) !important; 
+            margin: 0; padding: 0; 
+            background: transparent !important; 
             font-family: 'Inter', sans-serif; 
-            height: 100vh; 
-            width: 100vw;
+            height: 100vh; width: 100vw;
             overflow: hidden; 
+            pointer-events: none; /* Klicks gehen durch den leeren Raum */
         }
 
-        /* --- NOTIFICATIONS --- */
+        /* Notifications */
         #notify-container {
             position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
             display: flex; flex-direction: column; gap: 10px; z-index: 9999; pointer-events: none;
@@ -39,93 +36,51 @@
         .notify {
             background: rgba(10, 10, 10, 0.9); border: 1px solid var(--border);
             padding: 12px 20px; border-radius: 8px; min-width: 250px;
-            backdrop-filter: blur(10px); display: flex; flex-direction: column;
-            animation: notifyIn 0.3s ease-out; overflow: hidden; position: relative;
+            backdrop-filter: blur(10px); animation: notifyIn 0.3s ease-out;
         }
-        @keyframes notifyIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .notify-header { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; color: #fff; }
-        .notify-header i { color: var(--accent); }
-        .notify-msg { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
-        .notify-bar { height: 2px; background: var(--accent); position: absolute; bottom: 0; left: 0; width: 100%; }
 
-        /* FIX: Spectator List ohne hässlichen schwarzen Kasten */
+        /* Spectator List */
         #spectator-list {
             position: absolute; top: 20px; right: 20px; width: 200px; 
-            background: rgba(5, 5, 5, 0.5) !important; 
-            border: 1px solid var(--border); border-radius: 10px;
-            padding: 12px; backdrop-filter: blur(5px); display: flex; flex-direction: column; gap: 8px;
-            pointer-events: none;
+            background: rgba(5, 5, 5, 0.5); border: 1px solid var(--border);
+            border-radius: 10px; padding: 12px; pointer-events: none; z-index: 1;
         }
-        .spec-item { display: flex; align-items: center; gap: 8px; color: #fff; font-size: 13px; }
-        .spec-icon { color: var(--accent); font-size: 10px; }
 
-        /* FIX: Display: none statt nur opacity, um Klicks im geschlossenen Zustand zu verhindern */
+        /* Menu Wrapper */
         #menu-wrapper {
-            position: absolute; top: 50px; left: 100px;
+            position: absolute; top: 100px; left: 100px;
             display: none; align-items: flex-start; gap: 20px;
-            opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+            opacity: 0; transition: opacity 0.2s ease;
+            pointer-events: all; /* Klicks nur hier erlauben */
+            z-index: 1000;
         }
-
-        #app, #player-detail-menu { pointer-events: all; }
 
         #app {
             width: 1050px; height: 820px;
             background: var(--bg-window); border: 1px solid var(--border);
-            border-radius: 16px; display: flex; box-shadow: 0 50px 100px rgba(0,0,0,0.8); overflow: hidden;
+            border-radius: 16px; display: flex; overflow: hidden;
+            box-shadow: 0 50px 100px rgba(0,0,0,0.8);
         }
 
-        #player-detail-menu {
-            width: 350px; height: 820px; background: var(--bg-window); border: 1px solid var(--border);
-            border-radius: 16px; box-shadow: 0 50px 100px rgba(0,0,0,0.8);
-            display: none; flex-direction: column; padding: 25px; animation: slideIn 0.3s ease-out; overflow-y: auto;
-        }
-
-        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
-
-        .sidebar { width: 240px; background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 30px 15px; cursor: grab; }
-        .brand-header { display: flex; align-items: center; gap: 10px; margin-bottom: 40px; pointer-events: none; }
-        .dollar-sign { color: var(--accent); font-size: 24px; font-weight: 800; }
-        .brand-name { font-weight: 700; color: #fff; font-size: 20px; }
-        .brand-name span { color: var(--accent); }
-
-        .nav-link { padding: 12px 15px; margin-bottom: 4px; border-radius: 10px; color: var(--text-dim); cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 12px; font-size: 14px; }
+        .sidebar { width: 240px; background: var(--bg-sidebar); border-right: 1px solid var(--border); padding: 30px 15px; cursor: grab; }
+        .nav-link { padding: 12px 15px; margin-bottom: 4px; border-radius: 10px; color: var(--text-dim); cursor: pointer; display: flex; align-items: center; gap: 12px; }
         .nav-link.active { color: #fff; background: rgba(255,255,255,0.06); }
         .nav-link.active i { color: var(--accent); }
 
-        .content { flex: 1; padding: 35px; overflow-y: auto; display: flex; flex-direction: column; }
+        .content { flex: 1; padding: 35px; overflow-y: auto; background: var(--bg-window); }
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
         .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 15px; }
-        .card h3 { margin: 0 0 15px 0; font-size: 11px; text-transform: uppercase; color: var(--accent); letter-spacing: 1px; }
+        .card h3 { margin: 0 0 15px 0; font-size: 11px; text-transform: uppercase; color: var(--accent); }
 
-        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; position: relative; }
-        .row label { font-size: 13px; color: #eee; }
-
-        .switch { width: 34px; height: 18px; background: #222; border-radius: 20px; position: relative; cursor: pointer; transition: 0.3s; }
+        .row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .switch { width: 34px; height: 18px; background: #222; border-radius: 20px; position: relative; cursor: pointer; }
+        .switch.on { background: var(--accent); }
         .switch::after { content: ''; position: absolute; width: 12px; height: 12px; background: #888; border-radius: 50%; top: 3px; left: 3px; transition: 0.3s; }
-        .switch.on { background: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
         .switch.on::after { left: 19px; background: #000; }
 
-        .feature-btn { width: 100%; background: #111; border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 8px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 6px; transition: 0.2s; text-align: left; }
-        .feature-btn:hover { border-color: var(--accent); }
-        .btn-danger:hover { background: var(--danger); color: #fff; }
-
-        .input-box { background: #111; border: 1px solid var(--border); border-radius: 8px; padding: 10px; color: #fff; width: 100%; margin-bottom: 10px; font-size: 12px; }
-
+        .feature-btn { width: 100%; background: #111; border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 8px; cursor: pointer; margin-bottom: 6px; }
         .tab-pane { display: none; }
         .tab-pane.active { display: block; }
-
-        .slider-container { display: flex; align-items: center; gap: 10px; }
-        .slider-val { min-width: 35px; font-size: 12px; color: var(--accent); text-align: right; }
-        input[type="range"] { -webkit-appearance: none; width: 80px; height: 4px; background: #333; border-radius: 2px; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; background: var(--accent); cursor: pointer; }
-
-        .player-item { background: #0a0a0a; border: 1px solid var(--border); padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; cursor: pointer; transition: 0.2s; }
-        .player-item:hover { border-color: var(--accent); background: #0e0e0e; }
-        .player-info { display: flex; align-items: center; gap: 12px; }
-        .player-avatar { width: 34px; height: 34px; background: #151515; border-radius: 8px; display: grid; place-items: center; font-weight: 700; color: var(--accent); font-size: 14px; border: 1px solid var(--border); }
-        .player-meta { display: flex; flex-direction: column; gap: 2px; }
-        .player-name { font-size: 13px; font-weight: 600; color: #fff; }
-        .player-sub { font-size: 10px; color: var(--text-dim); }
     </style>
 </head>
 <body>
@@ -133,181 +88,64 @@
 <div id="notify-container"></div>
 
 <div id="spectator-list">
-    <div style="font-size: 10px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 5px; font-weight: 700;">Spectators</div>
-    <div id="spec-items-wrapper">
-        <div class="spec-item"><i class="fa-solid fa-circle spec-icon"></i> Laxus_Gamer</div>
-    </div>
+    <div style="font-size: 10px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 5px;">Spectators</div>
+    <div class="spec-item" style="color:#fff; font-size:13px;"><i class="fa-solid fa-circle" style="color:var(--accent); font-size:8px;"></i> Laxus_Gamer</div>
 </div>
 
 <div id="menu-wrapper">
     <div id="app">
         <div class="sidebar">
-            <div class="brand-header">
-                <div class="dollar-sign">$</div>
-                <div class="brand-name">MONEY<span>WARE</span></div>
-            </div>
-            <div class="nav-links">
-                <div class="nav-link active" onclick="tab('combat', this, 'Combat', 'Aimbot & Weapons')"><i class="fa-solid fa-crosshairs"></i> Combat</div>
-                <div class="nav-link" onclick="tab('misc', this, 'Misc & Player', 'Personal Features')"><i class="fa-solid fa-user"></i> Misc & Player</div>
-                <div class="nav-link" onclick="tab('vehicle', this, 'Vehicle', 'Handling & Spawning')"><i class="fa-solid fa-car"></i> Vehicle</div>
-                <div class="nav-link" onclick="tab('visuals', this, 'Visuals', 'ESP & UI')"><i class="fa-solid fa-eye"></i> Visuals</div>
-                <div class="nav-link" onclick="tab('players', this, 'Online Players', 'Interaction')"><i class="fa-solid fa-users"></i> Players</div>
-                <div class="nav-link" onclick="tab('settings', this, 'Settings', 'Config & System')"><i class="fa-solid fa-gear"></i> Settings</div>
-            </div>
+            <div style="color:#fff; font-weight:700; font-size:20px; margin-bottom:40px;">MONEY<span style="color:var(--accent)">WARE</span></div>
+            <div class="nav-link active" onclick="tab('combat')"><i class="fa-solid fa-crosshairs"></i> Combat</div>
+            <div class="nav-link" onclick="tab('misc')"><i class="fa-solid fa-user"></i> Player</div>
         </div>
-
         <div class="content">
-            <h2 id="page-h2" style="color:#fff; margin:0;">Combat</h2>
-            <p id="page-desc" style="color:var(--text-dim); font-size:13px; margin-bottom:25px;">Aimbot & Weapons</p>
-
             <div id="combat" class="tab-pane active">
                 <div class="grid">
                     <div class="card">
-                        <h3>Aimbot Options</h3>
-                        <div class="row"><label>Enable Aimbot</label><div class="switch" data-feat="aimbot"></div></div>
-                        <div class="row"><label>Silent Aim</label><div class="switch" data-feat="silent_aim"></div></div>
-                        <div class="row"><label>Target Players</label><div class="switch on" data-feat="aim_players"></div></div>
-                        <div class="row"><label>Aimbot FOV</label>
-                            <div class="slider-container">
-                                <input type="range" min="1" max="180" value="90" oninput="updateVal(this, 'fov_val')" data-feat="aim_fov">
-                                <span class="slider-val" id="fov_val">90</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <h3>Weapon Mods</h3>
-                        <div class="row"><label>Infinite Ammo</label><div class="switch" data-feat="inf_ammo"></div></div>
-                        <div class="row"><label>No Reload</label><div class="switch" data-feat="no_reload"></div></div>
-                        <div class="row"><label>Rapid Fire</label><div class="switch" data-feat="rapid_fire"></div></div>
+                        <h3>Aimbot</h3>
+                        <div class="row"><label>Enable Aimbot</label><div class="switch" onclick="this.classList.toggle('on')"></div></div>
                     </div>
                 </div>
             </div>
-
             <div id="misc" class="tab-pane">
-                <div class="grid">
-                    <div class="card">
-                        <h3>Player State</h3>
-                        <div class="row"><label>God Mode</label><div class="switch" data-feat="godmode"></div></div>
-                        <div class="row"><label>Noclip</label><div class="switch" data-feat="noclip"></div></div>
-                        <div class="row"><label>Super Jump</label><div class="switch" data-feat="superjump"></div></div>
-                    </div>
-                    <div class="card">
-                        <h3>Actions</h3>
-                        <button class="feature-btn" data-action="heal">Heal Player</button>
-                        <button class="feature-btn" data-action="max_armor">Max Armor</button>
-                        <button class="feature-btn btn-danger" data-action="suicide">Suicide</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="vehicle" class="tab-pane">
-                <div class="grid">
-                    <div class="card">
-                        <h3>Spawn</h3>
-                        <input type="text" class="input-box" id="veh-input" placeholder="Vehicle Name...">
-                        <button class="feature-btn" onclick="spawnVehicle()">Spawn Vehicle</button>
-                    </div>
-                    <div class="card">
-                        <h3>Mods</h3>
-                        <button class="feature-btn" data-action="veh_repair">Repair</button>
-                        <div class="row"><label>Rainbow</label><div class="switch" data-feat="veh_rainbow"></div></div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="players" class="tab-pane">
-                <div id="online-player-list">
-                    <div class="player-item" onclick="openPlayerMenu('Laxus_Gamer', '12')">
-                        <div class="player-info">
-                            <div class="player-avatar">L</div>
-                            <div class="player-meta"><span class="player-name">Laxus_Gamer</span><span class="player-sub">ID: 12</span></div>
-                        </div>
-                        <i class="fa-solid fa-chevron-right"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div id="settings" class="tab-pane">
                 <div class="card">
-                    <h3>Menu</h3>
-                    <button class="feature-btn btn-danger" onclick="killMenu()">Unload Menu</button>
+                    <h3>Self</h3>
+                    <button class="feature-btn">Heal Player</button>
                 </div>
             </div>
         </div>
-    </div>
-
-    <div id="player-detail-menu">
-        <div style="text-align: center; margin-bottom: 20px;">
-            <div id="target-avatar" style="width: 50px; height: 50px; background:#1a1a1a; border-radius:12px; margin: 0 auto 10px; display:grid; place-items:center; color:var(--accent); font-size:20px; font-weight:700;">?</div>
-            <h3 id="target-name" style="margin:0; color:#fff;">Player</h3>
-            <span id="target-id-label" style="color:var(--accent); font-size:12px;">ID: --</span>
-        </div>
-        <button class="feature-btn" data-action="p_spectate">Spectate</button>
-        <button class="feature-btn btn-danger" data-action="p_kill">Kill</button>
-        <button class="feature-btn" data-action="p_teleport">Teleport To</button>
-        <div style="margin-top:auto;"><button class="feature-btn" onclick="closePlayerDetail()">Close</button></div>
     </div>
 </div>
 
 <script>
-    // FIX: VISIBILITY (Display Flex sorgt dafür, dass Klicks registriert werden)
+    function tab(id) {
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+    }
+
     window.addEventListener('message', (event) => {
         if (event.data.type === "ui") {
             const wrapper = document.getElementById('menu-wrapper');
             if (event.data.status) {
                 wrapper.style.display = "flex";
-                setTimeout(() => {
-                    wrapper.style.opacity = "1";
-                    wrapper.style.pointerEvents = "all";
-                }, 50);
+                setTimeout(() => wrapper.style.opacity = "1", 10);
             } else {
                 wrapper.style.opacity = "0";
-                wrapper.style.pointerEvents = "none";
-                setTimeout(() => { wrapper.style.display = "none"; }, 200);
+                setTimeout(() => wrapper.style.display = "none", 200);
             }
         }
     });
 
-    function tab(id, el, title, desc) {
-        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        el.classList.add('active');
-        document.getElementById('page-h2').innerText = title;
-        document.getElementById('page-desc').innerText = desc;
-    }
-
-    document.addEventListener('click', (e) => {
-        if(e.target.classList.contains('switch')) {
-            e.target.classList.toggle('on');
-            notify('Feature', 'Toggled: ' + e.target.getAttribute('data-feat'));
-        }
-    });
-
-    function updateVal(s, t) { document.getElementById(t).innerText = s.value; }
-    function notify(title, msg) {
-        const container = document.getElementById('notify-container');
-        const n = document.createElement('div');
-        n.className = 'notify';
-        n.innerHTML = `<div class="notify-header"><i class="fa-solid fa-bell"></i> ${title}</div><div class="notify-msg">${msg}</div><div class="notify-bar"></div>`;
-        container.appendChild(n);
-        setTimeout(() => { n.style.animation = 'notifyIn 0.3s reverse forwards'; setTimeout(() => n.remove(), 300); }, 3000);
-    }
-
-    function openPlayerMenu(name, id) {
-        document.getElementById('target-name').innerText = name;
-        document.getElementById('target-id-label').innerText = "ID: " + id;
-        document.getElementById('player-detail-menu').style.display = 'flex';
-    }
-    function closePlayerDetail() { document.getElementById('player-detail-menu').style.display = 'none'; }
-
-    // DRAG LOGIC
+    // Dragging
     const wrapper = document.getElementById('menu-wrapper');
     const sidebar = document.querySelector('.sidebar');
-    let dragging = false, offset = {x:0, y:0};
-    sidebar.onmousedown = (e) => { dragging = true; offset.x = e.clientX - wrapper.offsetLeft; offset.y = e.clientY - wrapper.offsetTop; };
-    window.onmousemove = (e) => { if(dragging) { wrapper.style.left = (e.clientX-offset.x)+"px"; wrapper.style.top = (e.clientY-offset.y)+"px"; } };
-    window.onmouseup = () => dragging = false;
+    let drag = false, ox, oy;
+    sidebar.onmousedown = (e) => { drag = true; ox = e.clientX - wrapper.offsetLeft; oy = e.clientY - wrapper.offsetTop; };
+    window.onmousemove = (e) => { if(drag) { wrapper.style.left = (e.clientX-ox)+"px"; wrapper.style.top = (e.clientY-oy)+"px"; } };
+    window.onmouseup = () => drag = false;
 </script>
 </body>
 </html>
