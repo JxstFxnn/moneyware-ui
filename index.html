@@ -20,13 +20,14 @@
 
         * { box-sizing: border-box; user-select: none; outline: none; }
         
-        /* WICHTIG: Hintergrund auf Transparent setzen, damit FiveM nicht weiß rendert */
+        /* FIX: Transparenter Body verhindert schwarze/weiße Flächen im Spiel */
         body { 
             margin: 0; 
             padding: 0; 
             background-color: rgba(0, 0, 0, 0) !important; 
             font-family: 'Inter', sans-serif; 
             height: 100vh; 
+            width: 100vw;
             overflow: hidden; 
         }
 
@@ -47,21 +48,22 @@
         .notify-msg { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
         .notify-bar { height: 2px; background: var(--accent); position: absolute; bottom: 0; left: 0; width: 100%; }
 
-        /* Spectator List */
+        /* FIX: Spectator List ohne hässlichen schwarzen Kasten */
         #spectator-list {
             position: absolute; top: 20px; right: 20px; width: 200px; 
-            background: rgba(5, 5, 5, 0.8); border: 1px solid var(--border); border-radius: 10px;
-            padding: 12px; backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 8px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5); pointer-events: none; transition: 0.3s;
+            background: rgba(5, 5, 5, 0.5) !important; 
+            border: 1px solid var(--border); border-radius: 10px;
+            padding: 12px; backdrop-filter: blur(5px); display: flex; flex-direction: column; gap: 8px;
+            pointer-events: none;
         }
         .spec-item { display: flex; align-items: center; gap: 8px; color: #fff; font-size: 13px; }
         .spec-icon { color: var(--accent); font-size: 10px; }
 
-        /* Initial auf opacity 0, damit es beim Laden nicht kurz aufblinkt */
+        /* FIX: Display: none statt nur opacity, um Klicks im geschlossenen Zustand zu verhindern */
         #menu-wrapper {
             position: absolute; top: 50px; left: 100px;
-            display: flex; align-items: flex-start; gap: 20px;
-            opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
+            display: none; align-items: flex-start; gap: 20px;
+            opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
         }
 
         #app, #player-detail-menu { pointer-events: all; }
@@ -103,8 +105,6 @@
         .switch.on { background: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
         .switch.on::after { left: 19px; background: #000; }
 
-        .keybind-tag { font-size: 9px; color: var(--accent); background: rgba(0,255,136,0.1); padding: 2px 4px; border-radius: 4px; margin-left: 8px; border: 1px solid rgba(0,255,136,0.2); display: none; }
-
         .feature-btn { width: 100%; background: #111; border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 8px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 10px; margin-bottom: 6px; transition: 0.2s; text-align: left; }
         .feature-btn:hover { border-color: var(--accent); }
         .btn-danger:hover { background: var(--danger); color: #fff; }
@@ -114,18 +114,11 @@
         .tab-pane { display: none; }
         .tab-pane.active { display: block; }
 
-        .config-item { background: #080808; border: 1px solid var(--border); padding: 12px; border-radius: 8px; cursor: pointer; position: relative; overflow: hidden; margin-bottom: 5px; }
-        .config-progress { position: absolute; bottom: 0; left: 0; height: 2px; background: var(--accent); width: 0%; transition: width 0.1s linear; }
-
         .slider-container { display: flex; align-items: center; gap: 10px; }
         .slider-val { min-width: 35px; font-size: 12px; color: var(--accent); text-align: right; }
         input[type="range"] { -webkit-appearance: none; width: 80px; height: 4px; background: #333; border-radius: 2px; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 12px; width: 12px; border-radius: 50%; background: var(--accent); cursor: pointer; }
 
-        .filter-bar { display: flex; gap: 8px; margin-bottom: 15px; }
-        .filter-btn { flex: 1; padding: 8px; background: #0a0a0a; border: 1px solid var(--border); border-radius: 6px; color: var(--text-dim); font-size: 11px; text-transform: uppercase; cursor: pointer; transition: 0.2s; }
-        .filter-btn.active { border-color: var(--accent); color: #fff; background: rgba(0,255,136,0.05); }
-        
         .player-item { background: #0a0a0a; border: 1px solid var(--border); padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; cursor: pointer; transition: 0.2s; }
         .player-item:hover { border-color: var(--accent); background: #0e0e0e; }
         .player-info { display: flex; align-items: center; gap: 12px; }
@@ -171,8 +164,8 @@
                 <div class="grid">
                     <div class="card">
                         <h3>Aimbot Options</h3>
-                        <div class="row" oncontextmenu="setupKeybind(this)"><label>Enable Aimbot <span class="keybind-tag"></span></label><div class="switch" data-feat="aimbot"></div></div>
-                        <div class="row" oncontextmenu="setupKeybind(this)"><label>Silent Aim <span class="keybind-tag"></span></label><div class="switch" data-feat="silent_aim"></div></div>
+                        <div class="row"><label>Enable Aimbot</label><div class="switch" data-feat="aimbot"></div></div>
+                        <div class="row"><label>Silent Aim</label><div class="switch" data-feat="silent_aim"></div></div>
                         <div class="row"><label>Target Players</label><div class="switch on" data-feat="aim_players"></div></div>
                         <div class="row"><label>Aimbot FOV</label>
                             <div class="slider-container">
@@ -223,7 +216,6 @@
             </div>
 
             <div id="players" class="tab-pane">
-                <input type="text" class="input-box" id="player-search" placeholder="Search Player..." oninput="filterOnlinePlayers()">
                 <div id="online-player-list">
                     <div class="player-item" onclick="openPlayerMenu('Laxus_Gamer', '12')">
                         <div class="player-info">
@@ -236,20 +228,9 @@
             </div>
 
             <div id="settings" class="tab-pane">
-                <div class="grid">
-                    <div class="card">
-                        <h3>Config</h3>
-                        <input type="text" class="input-box" id="newCfgName" placeholder="Name...">
-                        <button class="feature-btn" onclick="saveConfig()">Save</button>
-                        <div class="config-item" onmousedown="startCfg(this)" onmouseup="stopCfg(this)">
-                            <span>Default.json</span>
-                            <div class="config-progress"></div>
-                        </div>
-                    </div>
-                    <div class="card">
-                        <h3>Menu</h3>
-                        <button class="feature-btn btn-danger" onclick="killMenu()">Unload Menu</button>
-                    </div>
+                <div class="card">
+                    <h3>Menu</h3>
+                    <button class="feature-btn btn-danger" onclick="killMenu()">Unload Menu</button>
                 </div>
             </div>
         </div>
@@ -269,51 +250,24 @@
 </div>
 
 <script>
-    let activeBinding = null;
-    let cfgTimer = null;
-
-    // --- LUA COMMUNICATION ---
-    function sendToLua(type, data = {}) {
-        // Nutze fetch nur, wenn GetParentResourceName existiert (für Standard NUI)
-        // Im Executor-DUI-Modus wird oft einfach nichts passieren, das ist ok.
-        try {
-            fetch(`https://${GetParentResourceName()}/${type}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            }).catch(e => {});
-        } catch(err) {}
-    }
-
-    // --- VISIBILITY (VON LUA GESTEUERT) ---
+    // FIX: VISIBILITY (Display Flex sorgt dafür, dass Klicks registriert werden)
     window.addEventListener('message', (event) => {
         if (event.data.type === "ui") {
             const wrapper = document.getElementById('menu-wrapper');
             if (event.data.status) {
-                wrapper.style.opacity = "1";
-                wrapper.style.pointerEvents = "all";
+                wrapper.style.display = "flex";
+                setTimeout(() => {
+                    wrapper.style.opacity = "1";
+                    wrapper.style.pointerEvents = "all";
+                }, 50);
             } else {
                 wrapper.style.opacity = "0";
                 wrapper.style.pointerEvents = "none";
-                closePlayerDetail(); // Auch Player-Details schließen
+                setTimeout(() => { wrapper.style.display = "none"; }, 200);
             }
         }
     });
 
-    // --- NOTIFICATIONS ---
-    function notify(title, msg) {
-        const container = document.getElementById('notify-container');
-        const n = document.createElement('div');
-        n.className = 'notify';
-        n.innerHTML = `<div class="notify-header"><i class="fa-solid fa-bell"></i> ${title}</div><div class="notify-msg">${msg}</div><div class="notify-bar"></div>`;
-        container.appendChild(n);
-        const bar = n.querySelector('.notify-bar');
-        setTimeout(() => bar.style.width = '0%', 10);
-        bar.style.transition = 'width 3s linear';
-        setTimeout(() => { n.style.animation = 'notifyIn 0.3s reverse forwards'; setTimeout(() => n.remove(), 300); }, 3000);
-    }
-
-    // --- UI CONTROLS ---
     function tab(id, el, title, desc) {
         document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
         document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
@@ -323,56 +277,29 @@
         document.getElementById('page-desc').innerText = desc;
     }
 
-    // --- TOGGLES & BUTTONS ---
     document.addEventListener('click', (e) => {
         if(e.target.classList.contains('switch')) {
             e.target.classList.toggle('on');
-            const state = e.target.classList.contains('on');
-            const feat = e.target.getAttribute('data-feat');
-            sendToLua('toggleFeature', { feature: feat, state: state });
-        }
-        
-        const btn = e.target.closest('.feature-btn');
-        if(btn && btn.hasAttribute('data-action')) {
-            sendToLua('executeAction', { action: btn.getAttribute('data-action') });
-            notify('Action', 'Executing: ' + btn.innerText);
+            notify('Feature', 'Toggled: ' + e.target.getAttribute('data-feat'));
         }
     });
 
-    // --- SLIDER ---
-    function updateVal(s, t) {
-        document.getElementById(t).innerText = s.value;
-        sendToLua('sliderChange', { feature: s.getAttribute('data-feat'), value: s.value });
+    function updateVal(s, t) { document.getElementById(t).innerText = s.value; }
+    function notify(title, msg) {
+        const container = document.getElementById('notify-container');
+        const n = document.createElement('div');
+        n.className = 'notify';
+        n.innerHTML = `<div class="notify-header"><i class="fa-solid fa-bell"></i> ${title}</div><div class="notify-msg">${msg}</div><div class="notify-bar"></div>`;
+        container.appendChild(n);
+        setTimeout(() => { n.style.animation = 'notifyIn 0.3s reverse forwards'; setTimeout(() => n.remove(), 300); }, 3000);
     }
 
-    // --- PLAYER MENU ---
     function openPlayerMenu(name, id) {
         document.getElementById('target-name').innerText = name;
         document.getElementById('target-id-label').innerText = "ID: " + id;
         document.getElementById('player-detail-menu').style.display = 'flex';
-        sendToLua('selectPlayer', { name: name, id: id });
     }
     function closePlayerDetail() { document.getElementById('player-detail-menu').style.display = 'none'; }
-
-    // --- CONFIG ---
-    function startCfg(el) {
-        const prog = el.querySelector('.config-progress');
-        let start = Date.now();
-        cfgTimer = setInterval(() => {
-            let diff = Date.now() - start;
-            prog.style.width = (diff / 2000 * 100) + '%';
-            if(diff >= 2000) {
-                clearInterval(cfgTimer);
-                sendToLua('loadConfig', { name: el.querySelector('span').innerText });
-                notify('Config', 'Settings Loaded');
-                prog.style.width = '0%';
-            }
-        }, 50);
-    }
-    function stopCfg(el) { clearInterval(cfgTimer); el.querySelector('.config-progress').style.width = '0%'; }
-
-    function killMenu() { sendToLua('closeMenu'); }
-    function spawnVehicle() { sendToLua('spawnVehicle', { model: document.getElementById('veh-input').value }); }
 
     // DRAG LOGIC
     const wrapper = document.getElementById('menu-wrapper');
