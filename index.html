@@ -19,7 +19,16 @@
         }
 
         * { box-sizing: border-box; user-select: none; outline: none; }
-        body { margin: 0; padding: 0; background: transparent; font-family: 'Inter', sans-serif; height: 100vh; overflow: hidden; }
+        
+        /* WICHTIG: Hintergrund auf Transparent setzen, damit FiveM nicht weiß rendert */
+        body { 
+            margin: 0; 
+            padding: 0; 
+            background-color: rgba(0, 0, 0, 0) !important; 
+            font-family: 'Inter', sans-serif; 
+            height: 100vh; 
+            overflow: hidden; 
+        }
 
         /* --- NOTIFICATIONS --- */
         #notify-container {
@@ -48,10 +57,11 @@
         .spec-item { display: flex; align-items: center; gap: 8px; color: #fff; font-size: 13px; }
         .spec-icon { color: var(--accent); font-size: 10px; }
 
+        /* Initial auf opacity 0, damit es beim Laden nicht kurz aufblinkt */
         #menu-wrapper {
             position: absolute; top: 50px; left: 100px;
             display: flex; align-items: flex-start; gap: 20px;
-            opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+            opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
         }
 
         #app, #player-detail-menu { pointer-events: all; }
@@ -254,7 +264,7 @@
         <button class="feature-btn" data-action="p_spectate">Spectate</button>
         <button class="feature-btn btn-danger" data-action="p_kill">Kill</button>
         <button class="feature-btn" data-action="p_teleport">Teleport To</button>
-        <div style="margin-top:auto;"><button class="feature-btn" onclick="closeMenu()">Close</button></div>
+        <div style="margin-top:auto;"><button class="feature-btn" onclick="closePlayerDetail()">Close</button></div>
     </div>
 </div>
 
@@ -264,13 +274,31 @@
 
     // --- LUA COMMUNICATION ---
     function sendToLua(type, data = {}) {
-        // Funktioniert in FiveM automatisch mit dem richtigen Resource-Namen
-        fetch(`https://${GetParentResourceName()}/${type}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        }).catch(e => {});
+        // Nutze fetch nur, wenn GetParentResourceName existiert (für Standard NUI)
+        // Im Executor-DUI-Modus wird oft einfach nichts passieren, das ist ok.
+        try {
+            fetch(`https://${GetParentResourceName()}/${type}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }).catch(e => {});
+        } catch(err) {}
     }
+
+    // --- VISIBILITY (VON LUA GESTEUERT) ---
+    window.addEventListener('message', (event) => {
+        if (event.data.type === "ui") {
+            const wrapper = document.getElementById('menu-wrapper');
+            if (event.data.status) {
+                wrapper.style.opacity = "1";
+                wrapper.style.pointerEvents = "all";
+            } else {
+                wrapper.style.opacity = "0";
+                wrapper.style.pointerEvents = "none";
+                closePlayerDetail(); // Auch Player-Details schließen
+            }
+        }
+    });
 
     // --- NOTIFICATIONS ---
     function notify(title, msg) {
@@ -297,7 +325,6 @@
 
     // --- TOGGLES & BUTTONS ---
     document.addEventListener('click', (e) => {
-        // Toggle Switch
         if(e.target.classList.contains('switch')) {
             e.target.classList.toggle('on');
             const state = e.target.classList.contains('on');
@@ -305,7 +332,6 @@
             sendToLua('toggleFeature', { feature: feat, state: state });
         }
         
-        // Feature Button
         const btn = e.target.closest('.feature-btn');
         if(btn && btn.hasAttribute('data-action')) {
             sendToLua('executeAction', { action: btn.getAttribute('data-action') });
@@ -326,27 +352,9 @@
         document.getElementById('player-detail-menu').style.display = 'flex';
         sendToLua('selectPlayer', { name: name, id: id });
     }
-    function closeMenu() { document.getElementById('player-detail-menu').style.display = 'none'; }
+    function closePlayerDetail() { document.getElementById('player-detail-menu').style.display = 'none'; }
 
-    // --- KEYBINDS ---
-    function setupKeybind(el) {
-        event.preventDefault();
-        const tag = el.querySelector('.keybind-tag');
-        tag.innerText = "Binding...";
-        tag.style.display = "inline-block";
-        activeBinding = { tag: tag, feat: el.querySelector('.switch').getAttribute('data-feat') };
-    }
-
-    window.addEventListener('keydown', (e) => {
-        if(activeBinding) {
-            const key = e.key.toUpperCase();
-            activeBinding.tag.innerText = key;
-            sendToLua('setKeybind', { feature: activeBinding.feat, key: key });
-            activeBinding = null;
-        }
-    });
-
-    // --- CONFIG LOAD (Hold 2 Sec) ---
+    // --- CONFIG ---
     function startCfg(el) {
         const prog = el.querySelector('.config-progress');
         let start = Date.now();
@@ -363,18 +371,10 @@
     }
     function stopCfg(el) { clearInterval(cfgTimer); el.querySelector('.config-progress').style.width = '0%'; }
 
-    // --- VISIBILITY (VON LUA GESTEUERT) ---
-    window.addEventListener('message', (event) => {
-        if (event.data.type === "ui") {
-            document.getElementById('menu-wrapper').style.opacity = event.data.status ? "1" : "0";
-            document.getElementById('menu-wrapper').style.pointerEvents = event.data.status ? "all" : "none";
-        }
-    });
-
     function killMenu() { sendToLua('closeMenu'); }
     function spawnVehicle() { sendToLua('spawnVehicle', { model: document.getElementById('veh-input').value }); }
 
-    // DRAG
+    // DRAG LOGIC
     const wrapper = document.getElementById('menu-wrapper');
     const sidebar = document.querySelector('.sidebar');
     let dragging = false, offset = {x:0, y:0};
